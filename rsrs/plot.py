@@ -17,14 +17,14 @@ def _mpl():
     try:
         import matplotlib
         matplotlib.use("Agg")  # 无界面环境也能出图
-        _setup_cjk_font()
+        setup_cjk_font()
         import matplotlib.pyplot as plt
         return plt
     except Exception:  # pragma: no cover - 取决于是否安装 matplotlib
         return None
 
 
-def _setup_cjk_font() -> None:
+def setup_cjk_font() -> None:
     """注册中文字体，避免图表里的中文标签显示成方框。
 
     依次尝试 Windows 的微软雅黑 / 黑体 / 宋体，以及 Linux / macOS 的常见

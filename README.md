@@ -191,6 +191,10 @@ R² = cov(high, low)² / (var(high) · var(low))
 
 斜率均值精确吻合（0.903），是判断 β 计算与数据口径无误的直接证据。
 
+![图 3　三个指标的取值分布](report/fig03_distribution.png)
+
+**图 3**　三个指标的取值分布（对应原报告图 14 / 图 15 / 图 20）。
+
 ### 4.2 预测性检验（与原报告的主要分歧）
 
 原报告第 2.3 节按指标取值分箱，统计每箱对应的**未来 10 日期望收益**与**上涨
@@ -219,6 +223,11 @@ R² = cov(high, low)² / (var(high) · var(low))
 
 修正标准分的整体相关系数仅因分箱宽度由 0.2 放宽到 0.5，就从 0.776 升至 0.923。
 
+![图 4　指标对未来 10 日收益的预测性](report/fig04_predictive.png)
+
+**图 4**　三个指标分箱后的未来 10 日期望收益与上涨概率（对应原报告图 16—图 22）。
+左轴为期望收益、右轴为上涨概率，图例中标注了本复现的整体相关系数。
+
 **结论**：原报告未披露分箱方案（分箱数与分箱方式均未说明），使得这一论断
 **无法被稳定复现**。该统计量对分箱方案高度敏感，且用的是 10 日重叠窗口——
 名义样本 2930 个交易日，相互独立的观测仅约 293 个，相关系数的显著性被严重
@@ -237,6 +246,14 @@ R² = cov(high, low)² / (var(high) · var(low))
 | 右偏标准分策略 | 25.82% / **27.43%** | 1.20 / **1.25** | -50.49% / **-50.49%** | 39 / 37 | 1783 / 1730 |
 
 标准分策略与右偏标准分策略的最大回撤与原报告完全相同。
+
+![图 1　四个基础策略的净值表现](report/fig01_nav_indicators.png)
+
+**图 1**　四个基础策略的净值表现（对应原报告图 9）。
+
+![图 2　标准分策略净值与回撤](report/fig02_nav_drawdown.png)
+
+**图 2**　标准分策略的净值（对数轴）与回撤，基准为沪深300 买入持有。
 
 ### 4.4 优化策略绩效（对照表 5、表 6）
 
@@ -291,6 +308,10 @@ R² = cov(high, low)² / (var(high) · var(low))
 位置与回落形态均已复现**（单指标列在 M=600 取峰值后单调回落）。单指标复现值与
 报告值的比值在全部 8 个 M 上稳定落在 1.057—1.070，极差仅 0.013，说明两条曲线
 形状一致、仅存在约 6% 的水平差。相关性优化一列系统性高于原报告，成因见第六节。
+
+![图 5　M 参数敏感性对照](report/fig05_m_sensitivity.png)
+
+**图 5**　M 参数敏感性的原报告值与复现值对照（对应原报告图 28）。
 
 ### 4.7 成本敏感性
 
@@ -406,7 +427,8 @@ python replicate.py --dry-run        # 只打印对照表，不写文件
 python check_replication.py          # 复现质量自检，输出分表通过率
 python diagnose_parameters.py        # 残差诊断：检验三处偏差的成因假设
 python run.py                        # 单指标完整回测，输出净值图与指标明细
-python tests/test_rsrs.py            # 13 项单元测试
+python make_figures.py               # 生成报告全部图表到 report/（需 matplotlib）
+python tests/test_rsrs.py            # 15 项单元测试
 ```
 
 全部参数通过命令行显式传入，无隐含默认值。数据快照已随仓库提交，无需联网即可
@@ -420,6 +442,7 @@ rsrs-timing/
 ├── check_replication.py    复现质量自检（逐项判定 + 分表通过率）
 ├── diagnose_parameters.py  残差成因诊断
 ├── run.py                  单指标回测与作图
+├── make_figures.py         生成报告图表（图 1—图 5）
 ├── _fetch_data.py          指数日行情获取脚本
 ├── data/                   沪深300、上证50、中证500、上证综指、深证成指
 ├── rsrs/
@@ -445,6 +468,11 @@ rsrs-timing/
 | `report/replicate_predictive_sensitivity.csv` | 预测性对分箱宽度的敏感性 |
 | `report/replicate_selfcheck.csv` | 自检明细（92 项逐项判定） |
 | `report/replicate_yearly.csv` | 分年度收益 |
+| `report/fig01_nav_indicators.png` | 图 1　四个基础策略净值 |
+| `report/fig02_nav_drawdown.png` | 图 2　标准分策略净值与回撤 |
+| `report/fig03_distribution.png` | 图 3　三个指标的分布 |
+| `report/fig04_predictive.png` | 图 4　预测性检验 |
+| `report/fig05_m_sensitivity.png` | 图 5　M 参数敏感性 |
 
 ---
 
