@@ -61,6 +61,7 @@ def plot_rsrs(
     outdir: str | Path,
     symbol: str = "sh000300",
     title: str = "RSRS 择时回测",
+    fname: Optional[str] = None,
 ) -> Optional[Path]:
     plt = _mpl()
     if plt is None:
@@ -116,7 +117,7 @@ def plot_rsrs(
     axr.set_ylim(dd.min() * 1.3, 0)
 
     fig.tight_layout()
-    path = outdir / f"rsrs_{symbol}.png"
+    path = outdir / (fname or f"rsrs_{symbol}.png")
     fig.savefig(path, dpi=130)
     plt.close(fig)
     return path

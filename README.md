@@ -1,5 +1,9 @@
 # RSRS 择时指标复现报告
 
+![tests](https://github.com/cedric-runtaoxu/rsrs-timing/actions/workflows/tests.yml/badge.svg)
+![python](https://img.shields.io/badge/python-3.9%2B-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+
 **复现对象**：光大证券《技术择时系列报告之一：基于阻力支撑相对强度（RSRS）的市场择时》
 （金融工程深度，分析师刘均伟，2017-05-01，共 27 页）
 **复现标的**：沪深300 指数（另附上证50、中证500 作多市场验证）
@@ -401,10 +405,17 @@ R² = cov(high, low)² / (var(high) · var(low))
 
 ## 八、局限与后续工作
 
-1. **数据源**：腾讯行情为公开接口，无成交额字段，且个别交易日存在源数据错误；
-   原报告使用 WIND。基准总收益的差异（本复现 242.79% vs 原报告 350.94%，比值
-   约 1.32，与沪深300 全收益指数相对价格指数的 12 年累计股息的量级吻合，推测
-   原报告基准采用全收益口径）需用 WIND 数据进一步核实。
+1. **数据源与基准口径**：腾讯行情为公开接口，无成交额字段，且个别交易日存在源
+   数据错误；原报告使用 WIND。基准总收益的差异（本复现 242.79% vs 原报告
+   350.94%）可作如下归因：两者的**净值之比**为
+   `(1 + 350.94%) / (1 + 242.79%) = 4.5094 / 3.4279 ≈ 1.316`，按 12.05 年折算
+   约 **2.3%/年**，与沪深300 全收益指数相对价格指数的股息率量级吻合，推测原报告
+   基准采用全收益口径。
+   （注：若直接相除两个收益率百分数会得到 `350.94 / 242.79 ≈ 1.445`，但该比值
+   没有金融含义——全收益指数与价格指数的关系体现在**净值之比**上。）
+   该推测**可用 WIND 的沪深300 全收益指数直接核对**：计算同期全收益指数与价格
+   指数的净值之比，若接近 1.316 即可确认。若无法取得 WIND 数据，也可用中证指数
+   公司公布的沪深300 全收益指数（H00300）日行情替代核实。
 2. **中证500 样本不完整**：该指数 2007-01-15 才发布，本复现无法覆盖原报告的
    2005-03 起点，需 WIND 回溯序列补齐。
 3. **预测性检验的分箱方案未披露**：本报告已给出多种分箱下的结果与敏感性，但
@@ -423,15 +434,27 @@ R² = cov(high, low)² / (var(high) · var(low))
 ```bash
 pip install -r requirements.txt
 
-python replicate.py                  # 对照原报告表 1—表 8（默认 2005-04-08 ~ 2017-04-28）
+python replicate.py                  # 复现口径：对照原报告表 1—表 8
 python replicate.py --end 2024-12-31 # 延长样本
 python replicate.py --dry-run        # 只打印对照表，不写文件
 python check_replication.py          # 复现质量自检，输出分表通过率
 python diagnose_parameters.py        # 残差诊断：检验三处偏差的成因假设
-python run.py                        # 单指标完整回测，输出净值图与指标明细
-python make_figures.py               # 生成报告全部图表到 report/（需 matplotlib）
+python make_figures.py               # 生成报告图表（需 matplotlib）
+python run.py                        # 演示口径：全样本 + 单边 0.1% 成本
 python tests/test_rsrs.py            # 15 项单元测试
 ```
+
+**两套口径的区分（重要）**
+
+| | 复现口径 | 演示口径 |
+|---|---|---|
+| 脚本 | `replicate.py` / `check_replication.py` / `make_figures.py` | `run.py` |
+| 样本区间 | 2005-04-08 ~ 2017-04-28（与原报告一致） | 全样本 2005—2024 |
+| 交易成本 | 不计成本（与原报告一致） | 单边 0.1% |
+| 用途 | 与原报告逐表对照 | 快速查看指标行为、信号与净值曲线 |
+| 输出文件前缀 | `replicate_` / `fig` | `demo_` |
+
+两套口径的区间与成本假设均不同，**结果不可直接对照**；输出文件亦以不同前缀区分。
 
 全部参数通过命令行显式传入，无隐含默认值。数据快照已随仓库提交，无需联网即可
 完成全部复现。
@@ -443,9 +466,11 @@ rsrs-timing/
 ├── replicate.py            对照原报告表 1—表 8 的复现脚本
 ├── check_replication.py    复现质量自检（逐项判定 + 分表通过率）
 ├── diagnose_parameters.py  残差成因诊断
-├── run.py                  单指标回测与作图
 ├── make_figures.py         生成报告图表（图 1—图 5）
+├── run.py                  演示脚本（全样本 + 成本口径，输出 demo_ 前缀）
 ├── _fetch_data.py          指数日行情获取脚本
+├── pyproject.toml          项目元数据与依赖声明
+├── .github/workflows/tests.yml   CI：push 时运行单元测试与复现自检
 ├── data/                   沪深300、上证50、中证500、上证综指、深证成指
 ├── rsrs/
 │   ├── data.py             数据加载与一致性校验
@@ -454,8 +479,8 @@ rsrs-timing/
 │   ├── predictive.py       预测性检验（分箱统计与敏感性）
 │   ├── backtest.py         回测与绩效统计（逐笔交易明细，支持多空）
 │   └── plot.py             图表输出（依赖 matplotlib，可选）
-├── report/                 结果输出（对照表 CSV）
-└── tests/test_rsrs.py      单元测试（13 项）
+├── report/                 结果输出（对照表 CSV 与图表）
+└── tests/test_rsrs.py      单元测试（15 项）
 ```
 
 ### 9.3 输出文件
@@ -475,6 +500,16 @@ rsrs-timing/
 | `report/fig03_distribution.png` | 图 3　三个指标的分布 |
 | `report/fig04_predictive.png` | 图 4　预测性检验 |
 | `report/fig05_m_sensitivity.png` | 图 5　M 参数敏感性 |
+
+**演示口径产物**（由 `run.py` 生成：全样本 2005—2024 + 单边 0.1% 成本，
+与上表口径不同，不可直接对照）：
+
+| 文件 | 内容 |
+|---|---|
+| `report/demo_metrics_sh000300.csv` | 绩效汇总（演示口径） |
+| `report/demo_equity_sh000300.csv` | 净值、基准、日收益与仓位 |
+| `report/demo_indicator_sh000300.csv` | 四个指标与信号序列 |
+| `report/demo_sh000300.png` | 净值曲线与交易信号标注 |
 
 ---
 

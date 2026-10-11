@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rsrs-timing"
+version = "0.3.0"
+description = "光大证券 RSRS 择时指标复现：4 个基础指标 + 6 个优化策略"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Cedric XU" }]
+keywords = ["quantitative-finance", "market-timing", "RSRS", "factor", "backtest"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+# 仅作图需要；全部计算与对照表只依赖 numpy / pandas
+plot = ["matplotlib>=3.7"]
+
+[tool.setuptools]
+packages = ["rsrs"]
+
+[tool.pytest.ini_options]
+# 单元测试不依赖 pytest，可直接运行：python tests/test_rsrs.py
+testpaths = ["tests"]
