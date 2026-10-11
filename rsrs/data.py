@@ -18,6 +18,8 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 SYMBOLS = {
     "sh000300": "沪深300",
+    "sh000016": "上证50",
+    "sh000905": "中证500",
     "sh000001": "上证综指",
     "sz399001": "深证成指",
 }

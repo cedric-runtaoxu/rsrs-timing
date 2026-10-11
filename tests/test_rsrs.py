@@ -16,7 +16,8 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from rsrs.backtest import backtest, max_drawdown, sharpe
-from rsrs.indicators import rsrs_beta, rsrs_signal, rsrs_zscore
+from rsrs.indicators import rsrs_beta, rsrs_family, rsrs_r2, rsrs_signal, rsrs_zscore
+from rsrs.strategies import apply_entry_filter, ma_filter, volume_corr_filter
 
 
 def _price_index(n=800, seed=0):
@@ -45,11 +46,52 @@ def test_beta_is_linear_slope():
     assert np.allclose(beta.dropna(), 2.0, atol=1e-9), beta.dropna().describe()
 
 
+def test_zscore_warmup_convention():
+    """预热口径：不足 M 时用已有数据（原报告第 22 页），而不是强制凑满整窗。
+
+    这是本项目最关键的一处口径修正。若要求凑满 M 个观测，回测前 600 个交易日
+    将无信号，标准分策略年化会从 25.6% 掉到 12.2%，无法复现原报告。
+    """
+    idx = pd.bdate_range("2000-01-01", periods=1000)
+    beta = pd.Series(np.arange(1000, dtype=float) + np.sin(np.arange(1000) / 20.0), index=idx)
+
+    z_expanding = rsrs_zscore(beta, m=600, min_periods=10)
+    assert int(z_expanding.isna().sum()) == 9, "扩展口径下前 9 个为空"
+    assert z_expanding.first_valid_index() == idx[9]
+
+    z_full = rsrs_zscore(beta, m=600, min_periods=600)
+    assert int(z_full.isna().sum()) == 599, "满窗口径下前 599 个为空"
+
+
 def test_zscore_standardizes():
     beta = pd.Series(np.sin(np.arange(1000) / 20.0) + 5.0)
-    z = rsrs_zscore(beta, m=100)
-    assert z.isna().sum() == 99  # 前 m-1 个为 NaN
+    z = rsrs_zscore(beta, m=100, min_periods=100)
+    assert z.isna().sum() == 99  # 满窗口径下前 m-1 个为 NaN
     assert np.allclose(z.dropna().mean(), 0.0, atol=0.3)  # 近似，因为 sin 周期性
+
+
+def test_r2_and_derived_indicators():
+    """R² ∈ [0,1]；修正标准分 = z×R²；右偏标准分 = 修正标准分×beta。"""
+    n = 300
+    idx = pd.bdate_range("2020-01-01", periods=n)
+    rng = np.random.default_rng(3)
+    low = pd.Series(100 + np.cumsum(rng.normal(0, 1, n)), index=idx)
+    high = 1.05 * low + rng.normal(0, 0.5, n)
+
+    r2 = rsrs_r2(high, low, n=18)
+    assert r2.min() >= -1e-12 and r2.max() <= 1 + 1e-12
+
+    fam = rsrs_family(pd.DataFrame({"high": high, "low": low}), n=18, m=100)
+    assert np.allclose((fam["zscore"] * fam["r2"]).dropna(), fam["modified"].dropna())
+    assert np.allclose((fam["modified"] * fam["beta"]).dropna(), fam["right_skewed"].dropna())
+
+
+def test_slope_strategy_thresholds():
+    """斜率策略用非对称阈值（买入 1.0 / 卖出 0.8），与原报告第 2.1 节一致。"""
+    beta = pd.Series([0.5, 1.1, 0.9, 0.85, 0.7, 1.2])
+    sig = rsrs_signal(beta, s_buy=1.0, s_sell=0.8)
+    # 1.1>1.0 开仓；0.9/0.85 落在 0.8~1.0 之间 -> 维持持仓；0.7<0.8 平仓；1.2 再开仓
+    assert list(sig) == [0.0, 1.0, 1.0, 1.0, 0.0, 1.0], list(sig)
 
 
 def test_signal_state_machine():
@@ -98,6 +140,38 @@ def test_cost_reduces_return():
     g2 = backtest(df, sig2, lag=1, cost=0.0)
     n2 = backtest(df, sig2, lag=1, cost=0.001)
     assert g2.equity.iloc[-1] > n2.equity.iloc[-1]
+
+
+def test_ma_filter_uses_lagged_ma():
+    """价格过滤必须用「前一日 MA」与「前三日 MA」，不能用当日 MA（会引入额外信息）。"""
+    idx = pd.bdate_range("2020-01-01", periods=60)
+    close = pd.Series(np.linspace(100, 200, 60), index=idx)   # 单调上涨
+    ok = ma_filter(close, window=20)
+    assert bool(ok.loc[idx[25]:].all()), "单调上涨时前一日 MA 应始终高于前三日 MA"
+
+    close_down = pd.Series(np.linspace(200, 100, 60), index=idx)
+    ok_down = ma_filter(close_down, window=20)
+    assert not bool(ok_down.loc[idx[25]:].any())
+
+
+def test_entry_filter_blocks_buys_only():
+    """开仓过滤只影响买点，不影响卖点。"""
+    base = pd.Series([0, 1, 1, 1, 0, 1, 1], dtype="float64")
+    allow = pd.Series([True, False, False, True, True, False, True])
+    out = apply_entry_filter(base, allow)
+    # 第2、3 天想开仓但被拦 -> 空仓；第4 天放行 -> 开仓；第5 天信号转空 -> 无条件平仓
+    assert list(out) == [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0], list(out)
+
+
+def test_volume_corr_filter_shape():
+    idx = pd.bdate_range("2020-01-01", periods=50)
+    rng = np.random.default_rng(7)
+    vol = pd.Series(rng.lognormal(0, 0.5, 50), index=idx)
+    ind = pd.Series(rng.normal(0, 1, 50), index=idx)
+    f = volume_corr_filter(vol, ind, window=10)
+    assert f.dtype == bool
+    assert f.iloc[:9].sum() == 0            # 前 9 天不足窗口
+    assert int(f.sum()) > 0
 
 
 def _run_all() -> int:
