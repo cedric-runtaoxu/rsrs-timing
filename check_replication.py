@@ -96,6 +96,10 @@ def main() -> int:
     for nm, rep, ours in (("均值", -0.040, z.mean()), ("标准差", 1.063, z.std(ddof=1)),
                           ("偏度", -0.508, z.skew()), ("峰度", 1.105, z.kurt())):
         add("表3 标准分低阶矩", nm, "低阶矩", rep, ours)
+    mod = fam["modified"].dropna()
+    for nm, rep, ours in (("均值", 0.034, mod.mean()), ("标准差", 0.856, mod.std(ddof=1)),
+                          ("偏度", 0.080, mod.skew()), ("峰度", 0.245, mod.kurt())):
+        add("表3 修正标准分低阶矩", nm, "低阶矩", rep, ours)
 
     # ---------------- 表 2 / 表 4：四个基础策略 ----------------
     for name, sig in signals.items():

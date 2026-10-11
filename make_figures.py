@@ -49,9 +49,13 @@ def _mpl():
         return None
 
 
-def _save(fig, plt, outdir: Path, name: str) -> Path:
+def _save(fig, plt, outdir: Path, name: str, top: float | None = None) -> Path:
+    """保存图；``top`` 给出为总标题预留的空间（tight_layout 的 rect 上边界）。"""
     path = outdir / name
-    fig.tight_layout()
+    if top is None:
+        fig.tight_layout()
+    else:
+        fig.tight_layout(rect=(0.0, 0.0, 1.0, top))
     fig.savefig(path, dpi=130)
     plt.close(fig)
     print(f"  已生成 {path}")
@@ -120,8 +124,9 @@ def fig_distribution(df, outdir, plt):
                      f"偏度 {v.skew():.3f}  峰度 {v.kurt():.3f}", fontsize=10)
         ax.set_ylabel("频数")
         ax.grid(**GRID)
-    fig.suptitle("图 3　三个指标的取值分布（对应原报告图 14 / 图 15 / 图 20）", y=1.02)
-    return _save(fig, plt, outdir, "fig03_distribution.png")
+    fig.suptitle("图 3　三个指标的取值分布（对应原报告图 14 / 图 15 / 图 20）",
+                 y=0.98, fontsize=11)
+    return _save(fig, plt, outdir, "fig03_distribution.png", top=0.90)
 
 
 # ---------------------------------------------------------------- 图 4
@@ -158,8 +163,8 @@ def fig_predictive(df, outdir, plt, width=0.2, horizon=10):
 
     fig.suptitle(f"图 4　指标对未来 10 日收益的预测性（等宽分箱，箱宽 {width}，"
                  f"共 {len(df)} 个交易日但独立观测仅约 {effective_sample_n(df['close'], horizon)} 个）",
-                 y=1.03, fontsize=11)
-    return _save(fig, plt, outdir, "fig04_predictive.png")
+                 y=0.99, fontsize=11)
+    return _save(fig, plt, outdir, "fig04_predictive.png", top=0.88)
 
 
 # ---------------------------------------------------------------- 图 5
@@ -192,8 +197,8 @@ def fig_m_sensitivity(df, outdir, plt):
         ax.set_title(col, fontsize=11)
         ax.legend(fontsize=8)
         ax.grid(**GRID)
-    fig.suptitle("图 5　M 参数敏感性：原报告与本复现（不计成本）", y=1.03, fontsize=11)
-    return _save(fig, plt, outdir, "fig05_m_sensitivity.png")
+    fig.suptitle("图 5　M 参数敏感性：原报告与本复现（不计成本）", y=0.99, fontsize=11)
+    return _save(fig, plt, outdir, "fig05_m_sensitivity.png", top=0.88)
 
 
 # ---------------------------------------------------------------- 入口
