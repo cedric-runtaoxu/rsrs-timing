@@ -181,7 +181,7 @@ def main() -> int:
               f"通过率 {core_rate:.0%}（全部落在容差内）。")
         if rate < core_rate:
             print(f"      扩展部分（优化策略 表5/6、多空多市场 表8、M 敏感性 表7）"
-                  f"整体通过率 {rate:.1%}，存在系统性偏差，原因见 README「已知差异」。")
+                  f"整体通过率 {rate:.1%}，存在系统性偏差，成因见 README 第六节「残差诊断」。")
     else:
         print(f"结论：复现未达预期（核心项通过率 {core_rate:.1%}）。")
     return 0 if core_rate >= 0.95 else 1

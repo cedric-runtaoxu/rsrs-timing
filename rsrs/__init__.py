@@ -24,7 +24,7 @@ plot          图表输出（依赖 matplotlib，可选）
 ============  ==========================================================
 """
 
-from . import backtest, data, indicators, strategies
+from . import backtest, data, indicators, predictive, strategies
 
-__version__ = "0.2.0"
-__all__ = ["data", "indicators", "strategies", "backtest", "__version__"]
+__version__ = "0.3.0"
+__all__ = ["data", "indicators", "strategies", "predictive", "backtest", "__version__"]

@@ -26,6 +26,7 @@ import pandas as pd
 from rsrs.backtest import backtest, summarize
 from rsrs.data import SYMBOLS, load_index
 from rsrs.indicators import rsrs_family, rsrs_signal
+from rsrs.predictive import effective_sample_n, predictive_table, sensitivity_to_bins
 from rsrs.strategies import (
     apply_entry_filter,
     long_short_position,
@@ -106,6 +107,14 @@ REPORT_TABLE7 = {
     700: (13.084, 18.069, 13.609),
     750: (12.872, 18.031, 13.751),
     800: (11.841, 16.549, 13.234),
+}
+
+# 原报告第 2.3 节披露的预测性相关系数
+# 顺序：(左侧期望收益, 左侧上涨概率, 右侧期望收益, 右侧上涨概率, 整体期望收益, 整体上涨概率)
+REPORT_PREDICTIVE = {
+    "标准分": (-0.21, -0.01, 0.45, 0.27, 0.31, None),
+    "修正标准分": (0.50, 0.57, 0.53, 0.52, 0.68, 0.65),
+    "右偏标准分": (0.84, 0.80, 0.56, 0.42, 0.75, 0.66),
 }
 
 MARKETS = (
@@ -290,6 +299,30 @@ def main() -> int:
         show4[c] = show4[c].map(lambda v: f"{v:7.3f}")
     print(show4.to_string())
     save(ms, "replicate_m_sensitivity.csv")
+
+    print("\n=== 预测性检验对照（原报告第 2.3 节：指标 vs 未来 10 日收益）===")
+    print("    原报告未披露分箱方案；本表按原图横轴步长取等宽分箱，箱宽 0.2")
+    pt = predictive_table(df, horizon=10, binning="width", width=0.2)
+    pred_rows = []
+    for name, ref in REPORT_PREDICTIVE.items():
+        ours = pt.loc[name]
+        pred_rows.append({
+            "指标": name,
+            "左侧_期望收益_研报": ref[0], "左侧_期望收益_复现": ours["左侧_期望收益"],
+            "右侧_期望收益_研报": ref[2], "右侧_期望收益_复现": ours["右侧_期望收益"],
+            "整体_期望收益_研报": ref[4], "整体_期望收益_复现": ours["整体_期望收益"],
+            "整体_上涨概率_研报": ref[5], "整体_上涨概率_复现": ours["整体_上涨概率"],
+        })
+    ptbl = pd.DataFrame(pred_rows).set_index("指标")
+    print(ptbl.round(3).to_string())
+    save(ptbl, "replicate_predictive.csv")
+
+    print("\n=== 预测性相关系数对分箱宽度的敏感性（整体相关系数）===")
+    sens = sensitivity_to_bins(df, horizon=10).round(3)
+    print(sens.to_string())
+    save(sens.reset_index(), "replicate_predictive_sensitivity.csv")
+    print(f"\n    10 日重叠窗口下，名义样本 {len(df)} 个交易日，"
+          f"相互独立的观测仅约 {effective_sample_n(df['close'], 10)} 个。")
 
     # 逐年收益，便于观察信号分布
     print("\n=== 分年度（标准分策略 vs 沪深300）===")

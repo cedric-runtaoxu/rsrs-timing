@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from rsrs.backtest import backtest, max_drawdown, sharpe
 from rsrs.indicators import rsrs_beta, rsrs_family, rsrs_r2, rsrs_signal, rsrs_zscore
+from rsrs.predictive import binned_stats, forward_returns, predictive_correlation
 from rsrs.strategies import apply_entry_filter, ma_filter, volume_corr_filter
 
 
@@ -172,6 +173,39 @@ def test_volume_corr_filter_shape():
     assert f.dtype == bool
     assert f.iloc[:9].sum() == 0            # 前 9 天不足窗口
     assert int(f.sum()) > 0
+
+
+def test_forward_returns_uses_future_window():
+    """未来收益用于度量预测能力：t 日对应 t+horizon 日的收益，最后 horizon 个为空。"""
+    close = pd.Series([100.0, 110.0, 121.0])
+    fwd = forward_returns(close, horizon=1)
+    assert abs(fwd.iloc[0] - 0.10) < 1e-12
+    assert abs(fwd.iloc[1] - 0.10) < 1e-12
+    assert np.isnan(fwd.iloc[-1])
+
+
+def test_predictive_binning_and_sensitivity():
+    """分箱统计的基本性质，并确认相关系数对分箱宽度敏感。
+
+    后者是原报告「相关系数高达 75%」这一论断的主要弱点：原报告未披露分箱方案，
+    而该统计量随箱宽变化显著。
+    """
+    idx = pd.bdate_range("2000-01-01", periods=1500)
+    rng = np.random.default_rng(11)
+    close = pd.Series(100 * np.cumprod(1 + rng.normal(0, 0.01, 1500)), index=idx)
+    ind = pd.Series(rng.normal(0, 1, 1500), index=idx)
+
+    g = binned_stats(ind, close, horizon=10, binning="width", width=0.5)
+    assert g["center"].is_monotonic_increasing
+    assert bool(g["up_rate"].between(0.0, 1.0).all())
+    assert int(g["n"].sum()) <= len(ind)
+
+    c = predictive_correlation(ind, close, horizon=10, binning="width", width=0.5)
+    assert -1.0 <= c["corr_exp_ret"] <= 1.0
+    assert -1.0 <= c["corr_up_rate"] <= 1.0
+
+    gq = binned_stats(ind, close, horizon=10, binning="quantile", n_bins=20)
+    assert len(gq) <= 20
 
 
 def _run_all() -> int:
