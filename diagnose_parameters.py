@@ -9,11 +9,12 @@
 
     python diagnose_parameters.py
 
-假设 1｜价格优化·右偏标准分的参数
-    原报告第 22 页称优化策略统一使用 N=18、M=600，但该设定下本复现为年化
-    24.00%，与原报告表 5 / 表 8 的 28.19% 相差 4.19 个百分点。改用 N=16
-    （与右偏标准分基础版一致的回归窗口）后结果更接近，说明报告对优化版右偏
-    标准分的参数披露与其基础版存在不一致。
+假设 1｜优化策略的参数
+    原报告称优化策略统一使用 N=18、M=600。本脚本把六个优化策略在四种参数组合
+    下逐一复现，用于判断该声明是否成立：若报告实际统一用了 16/300，则六个策略
+    应整体在 16/300 下更吻合，而非只有右偏标准分一个。结论是价格优化·标准分
+    （偏差 0.17 个百分点）与价格优化·修正标准分（1.00）确认了 N=18；价格优化·
+    右偏标准分改用 N=16 后年化改善但最大回撤仍不符，成因尚未定位。
 
 假设 2｜成交量相关性过滤的口径
     第 3.2 节将该过滤定义为「前 10 日交易量与修正标准分之间的相关性为正」。
@@ -50,14 +51,37 @@ def main() -> int:
         s = summarize(backtest(df, sig, lag=1, cost=0.0))
         return s["年化收益"] * 100, s["夏普比率"], s["最大回撤"] * 100, s["交易次数"]
 
-    print("假设 1｜价格优化·右偏标准分")
-    print("  原报告表5/表8：年化 28.19%  夏普 1.56  最大回撤 -22.31%  交易 32 次")
-    for n, m in ((18, 600), (16, 300), (16, 600), (18, 300)):
-        fam = rsrs_family(df, n=n, m=m)
-        sig = apply_entry_filter(rsrs_signal(fam["right_skewed"], 0.7, -0.7), ma20)
-        a, sh, dd, tr = perf(sig)
-        print(f"  N={n:>2d} M={m:>3d} → 年化 {a:6.2f}%  夏普 {sh:5.2f}  "
-              f"最大回撤 {dd:7.2f}%  交易 {tr:4.0f}")
+    print("假设 1｜优化策略的参数（对照研报表 5 / 表 6 披露的年化收益）")
+    report = {
+        ("价格优化", "标准分"): 27.37, ("价格优化", "修正标准分"): 26.13,
+        ("价格优化", "右偏标准分"): 28.19,
+        ("量相关优化", "标准分"): 26.20, ("量相关优化", "修正标准分"): 26.22,
+        ("量相关优化", "右偏标准分"): 26.52,
+    }
+    cols = {"标准分": "zscore", "修正标准分": "modified", "右偏标准分": "right_skewed"}
+    combos = ((18, 600), (16, 300), (16, 600), (18, 300))
+    print(f"  {'优化策略':<20s}" + "".join(f"({n},{m})".rjust(12) for n, m in combos)
+          + "      研报")
+    devs = {c: [] for c in combos}
+    for (opt, ind_name), ref in report.items():
+        cells = []
+        for n, m in combos:
+            fam = rsrs_family(df, n=n, m=m)
+            base = rsrs_signal(fam[cols[ind_name]], s_buy=0.7, s_sell=-0.7)
+            filt = ma20 if opt == "价格优化" else volume_corr_filter(
+                df["volume"], fam["modified"], 10)
+            a = perf(apply_entry_filter(base, filt))[0]
+            devs[(n, m)].append(a - ref)
+            cells.append(f"{a:6.2f}{a - ref:+6.2f}".rjust(12))
+        print(f"  {opt + '·' + ind_name:<20s}" + "".join(cells) + f"{ref:10.2f}")
+    print("  " + "-" * 84)
+    for c in combos:
+        d = devs[c]
+        mad = sum(abs(x) for x in d) / len(d)
+        print(f"  N={c[0]:>2d} M={c[1]:>3d}  平均绝对偏差 {mad:5.2f}pp   "
+              f"±2pp 内 {sum(1 for x in d if abs(x) <= 2)}/{len(d)}")
+    print("  结论：价格优化·标准分与价格优化·修正标准分在 (18,600) 下确认 N=18 成立；")
+    print("        价格优化·右偏标准分改用 N=16 后年化改善，但最大回撤仍不符，成因尚未定位。")
 
     print("\n假设 2｜量相关优化·标准分（原文窗口明确为 10 日）")
     print("  原报告表6：年化 26.20%  夏普 1.66  最大回撤 -13.77%  交易 41 次")
