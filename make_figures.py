@@ -133,10 +133,9 @@ def fig_distribution(df, outdir, plt):
 
 
 def fig_predictive(df, outdir, plt, width=0.2, horizon=10):
-    fam18 = rsrs_family(df, n=18, m=600)
-    fam16 = rsrs_family(df, n=16, m=300)
+    fam18 = rsrs_family(df, n=18, m=600)   # 预测性分析：三个指标统一用 18/600
     specs = (("标准分", fam18["zscore"]), ("修正标准分", fam18["modified"]),
-             ("右偏标准分", fam16["right_skewed"]))
+             ("右偏标准分", fam18["right_skewed"]))
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.2))
     for ax, (name, ind) in zip(axes, specs):
         g = binned_stats(ind, df["close"], horizon=horizon, binning="width", width=width)

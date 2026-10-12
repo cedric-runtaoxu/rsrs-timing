@@ -123,12 +123,11 @@ def predictive_correlation(
 def _indicator_specs(df: pd.DataFrame):
     from .indicators import rsrs_family
 
-    fam18 = rsrs_family(df, n=18, m=600)
-    fam16 = rsrs_family(df, n=16, m=300)
+    fam = rsrs_family(df, n=18, m=600)
     return (
-        ("标准分", fam18["zscore"]),
-        ("修正标准分", fam18["modified"]),
-        ("右偏标准分", fam16["right_skewed"]),
+        ("标准分", fam["zscore"]),
+        ("修正标准分", fam["modified"]),
+        ("右偏标准分", fam["right_skewed"]),
     )
 
 
