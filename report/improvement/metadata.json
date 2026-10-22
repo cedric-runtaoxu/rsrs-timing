@@ -1,11 +1,17 @@
 {
-  "generated_at_utc": "2026-10-22T12:17:18.638392+00:00",
+  "generated_at_utc": "2026-10-22T14:02:27.965717+00:00",
   "config": {
-    "development_end": "2017-04-28",
-    "evaluation_end": "2026-10-21",
+    "reference_period": [
+      "2005-04-08",
+      "2017-04-28"
+    ],
+    "evaluation_period": [
+      "2017-05-02",
+      "2026-10-21"
+    ],
     "execution": "next_close",
     "cost_one_way": 0.001,
-    "author_benchmark": {
+    "volatility_damped": {
       "formula": "z*(R2**(2*volatility_rank))",
       "n": 18,
       "m": 600,
@@ -30,8 +36,8 @@
     "data/extended/sh000905.csv": "ada0f6e0371ef01d67748e572cf7a09435a97fb3ddb397b87b5d0dc224dab740"
   },
   "code_sha256": {
-    "improve.py": "77add020e055f99a31a8530924863cd9844000f209f5163252b039e27a415c8b",
-    "rsrs/improvement.py": "15969ba7f418b78161039e635d21b8825bdb25a22d3f9a1bd33a75d903ad75ad",
-    "tests/test_improvement.py": "dec26c03575ab50b47b8fdffd1894f5e2a9a1e3be91c96e0b02e6f537f1ef9f1"
+    "improve.py": "8ef79e75782831d98c23d61237334a7747cca9457e49e4ab4adb7b53addb4c72",
+    "rsrs/improvement.py": "f9ee6b57e31884b5a0fb800cca018c209c10de8325902c54fe7a9997a5be218e",
+    "tests/test_improvement.py": "d9d43fa36e80c76ce532a9ec1e51bfd4eb5751da456ff4ef5f4e4662b905b1bc"
   }
 }

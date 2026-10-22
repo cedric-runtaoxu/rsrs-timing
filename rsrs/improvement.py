@@ -38,10 +38,10 @@ def damped_rsrs(
     m: int = 600,
     min_periods: int = 10,
 ) -> pd.DataFrame:
-    """复现2019报告的波动率钝化公式，参数保持2017年原配置。
+    """波动率钝化RSRS：在高波动状态下提高拟合优度惩罚。
 
-    报告写作 ``z * R**(4*q)``。代码中的拟合优度列是 ``R²``，因此等价
-    实现为 ``z * (R²)**(2*q)``。q是N日收益波动率在过去M日的分位数。
+    实现为 ``z * (R²)**(2*q)``，其中q是N日收益波动率在过去M日的
+    经验分位数。q越高，低拟合优度信号被压缩得越明显。
     """
     family = rsrs_family(df, n=n, m=m, min_periods=min_periods)
     volatility = df["ret"].rolling(n, min_periods=n).std(ddof=1)
@@ -110,7 +110,7 @@ def adaptive_trend_rsrs(
     })
 
 
-def fixed_2019_signal(df: pd.DataFrame) -> tuple[pd.Series, pd.DataFrame]:
-    """2019钝化公式基准：不采用其利用2019数据重选的M=700。"""
+def volatility_damped_signal(df: pd.DataFrame) -> tuple[pd.Series, pd.DataFrame]:
+    """固定18/600/±0.7参数的波动率钝化信号。"""
     details = damped_rsrs(df, n=18, m=600, min_periods=10)
     return rsrs_signal(details["damped_rsrs"], .7, -.7), details

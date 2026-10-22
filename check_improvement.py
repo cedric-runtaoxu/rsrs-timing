@@ -24,7 +24,7 @@ def check(out=None):
     for path,sha in json.loads((out/"generated_sha256.json").read_text(encoding="utf-8")).items():
         assert hashlib.sha256((out/path).read_bytes()).hexdigest()==sha,path
     performance=pd.read_csv(out/"performance.csv")
-    assert len(performance)==3*6*5
+    assert len(performance)==3*6*4
     sensitivity=pd.read_csv(out/"sensitivity.csv")
     assert len(sensitivity)==27*4
     assert len(sensitivity[["滚动窗口","趋势窗口","进入分位","退出分位"]].drop_duplicates())==27
@@ -33,7 +33,12 @@ def check(out=None):
     assert (signals.loc[entries,"indicator_rank"]>=.8).all()
     assert signals.loc[entries,"price_above_trend"].astype(str).str.lower().eq("true").all()
     assert signals.loc[entries,"trend_up"].astype(str).str.lower().eq("true").all()
-    print("PASS: 改进配置、90组绩效、27组邻域、逐日入场条件及全部哈希")
+    benchmark=pd.read_csv(out/"benchmark_reconciliation.csv")
+    assert benchmark.loc[0,"首个收益观察日"]=="2017-05-02"
+    assert abs(benchmark.loc[0,"指数累计收益"]-benchmark.loc[0,"回测买入持有累计收益"])<1e-12
+    assert abs(benchmark.loc[0,"指数年化收益"]-benchmark.loc[0,"回测买入持有年化收益"])<1e-12
+    assert .015 < benchmark.loc[0,"指数年化收益"] < .025
+    print("PASS: 2017—2026基准核对、72组绩效、27组邻域、逐日入场条件及全部哈希")
 
 
 if __name__=="__main__": check()

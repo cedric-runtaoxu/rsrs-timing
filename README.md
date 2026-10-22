@@ -4,7 +4,7 @@
 
 **从这里阅读：[按原研报顺序的完整复现报告](report/paper/report.md)。** 全部32个图主题、10张表及结果解释集中在这一份报告中；图3—6是概念示意，分箱与数据缺口等不能精确复刻的事项明确披露。无需先读代码或分散的CSV。
 
-**后续研究：[策略失效诊断与后验改进](report/improvement/report.md)。** 结合2019年作者的回顾与改进，检验波动率钝化，并提出滚动分位数与长期趋势约束的状态自适应RSRS。该部分明确标注为看到后续历史后的改进研究，不冒充盲样本外结果。
+**后续研究：[策略评价、失效诊断与改进](report/improvement/report.md)。** 以2017-05-02至2026-10-21为统一评价期，核对沪深300基准收益，比较原始策略、波动钝化、趋势控制与状态自适应RSRS。该部分明确标注为看到延长样本后的改进研究，不冒充盲样本外结果。
 
 ## 1、阻力支撑相对强度概念
 
@@ -66,7 +66,7 @@ python check_improvement.py
 | [report/paper/coverage.csv](report/paper/coverage.csv) | 可机器核查的42项覆盖清单 |
 | report/paper/figures、tables、data | 所有图片、原文式表格、逐日明细及核账 |
 | [report/research/report.md](report/research/report.md) | 独立附录：延长样本与额外检验 |
-| [report/improvement/report.md](report/improvement/report.md) | 2019改进复核、失效归因与自有候选策略 |
+| [report/improvement/report.md](report/improvement/report.md) | 2017—2026策略评价、失效归因与改进方案 |
 
 ## 口径与复现边界
 
@@ -74,7 +74,7 @@ python check_improvement.py
 
 原文采用WIND，本项目采用腾讯价格指数数据。沪深300缺2005年3月，中证500缺2005—2006年；原文未披露精确分箱与全部成交细节，表7、图32的歧义也已注明。主报告完成逐项研究内容，不宣称逐数值复刻。没有为了对齐原文业绩调参。
 
-继续计算独立附录：`python research.py`。附录中原报告期与发表后共用相同策略参数、过滤、预热、执行和费用；它不回写或替代主报告。
+继续计算独立附录：`python research.py`。附录中原报告期与延长样本共用相同策略参数、过滤、预热、执行和费用；它不回写或替代主报告。
 
 ## 研究来源
 

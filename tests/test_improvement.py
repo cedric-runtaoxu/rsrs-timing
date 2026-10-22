@@ -31,7 +31,7 @@ def test_rolling_percentile_has_hand_computed_answer():
     assert np.isnan(rolling_percentile(y,window=3,min_periods=2).iloc[-1])
 
 
-def test_damped_formula_matches_report_transformation():
+def test_damped_formula_matches_definition():
     d = sample()
     q = damped_rsrs(d)
     expected = q.zscore * q.r2.pow(2*q.volatility_rank)
