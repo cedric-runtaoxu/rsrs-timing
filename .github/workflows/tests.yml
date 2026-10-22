@@ -34,8 +34,14 @@ jobs:
           python tests/test_rsrs.py
           python tests/test_research.py
           python tests/test_paper.py
+          python tests/test_improvement.py
 
       - name: 原研报逐项复现
         run: |
           python paper.py
           python check_replication.py
+
+      - name: 失效诊断与改进研究
+        run: |
+          python improve.py
+          python check_improvement.py

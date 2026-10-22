@@ -1,0 +1,17 @@
+{
+  "01_post2017_nav.png": "ce99f00ff20af1f44bf8d8779969989c8608d13fc1f788ad6b204ee6fb13ff15",
+  "02_yearly_returns.png": "1e9762fcd200c494766b53d22a87fb367219a1e3dff919ebaea284511b38401c",
+  "03_predictive_decay.png": "84835d728e374b132b32465cd8a8abe8f6580db15928af59af59a64f9d81e188",
+  "04_sensitivity.png": "5e2e2867acd58e86bad95aaad96eba09f4710dd7af5bd9e589b49abca86b12eb",
+  "active_return_attribution.csv": "5d1e8052fbc2ce13b29e0d0dc6d3355f29cef644c76d823a01cc0bc4acdcc93b",
+  "bootstrap.csv": "d592f63585ae43018735acddbc5dc0b394f48337f2ee39b5bb853618900e4a50",
+  "cross_market.csv": "5f232bce810a6b8842896dc451b5ab559ce276d2ae8085e0029a82c8f1779009",
+  "diagnosis_ic.csv": "7ea8063079953fb465fa0fff29266af00e604f55f3b150e6a927195c1dc3a891",
+  "metadata.json": "20730376ec8e42a5fc217d278c74726bd3fa81b54680625f9f2a62d807e8a843",
+  "performance.csv": "72b372b468ea99165c0f7abce353855c811911dfe88dca04491c5142ff73b94d",
+  "report.md": "198356f1f359afd193a10b6a027903e467d94ab21eb799eac11f85135eb51fdc",
+  "sensitivity.csv": "4297eee9e3dcdbfe53bbee91ac9e1f810759dcd94430c9a9977f3b000c5e2033",
+  "signals.csv": "677d248f4001dd718aa64a3eabb1bd3c78c39fe1cd8aa36c84d90065968a3954",
+  "trade_diagnostics.csv": "137460493d824301e43dc345d6edd48764af90c2e7e8d8fa7a9340ea81557da1",
+  "yearly.csv": "b668c38e39a223d5522f0fe858d48db8d70a4763ea1f6ab1c9b3b202d1a1ab03"
+}

@@ -1,0 +1,37 @@
+{
+  "generated_at_utc": "2026-10-22T12:17:18.638392+00:00",
+  "config": {
+    "development_end": "2017-04-28",
+    "evaluation_end": "2026-10-21",
+    "execution": "next_close",
+    "cost_one_way": 0.001,
+    "author_benchmark": {
+      "formula": "z*(R2**(2*volatility_rank))",
+      "n": 18,
+      "m": 600,
+      "thresholds": [
+        0.7,
+        -0.7
+      ]
+    },
+    "improved": {
+      "base": "right_skewed(18,600)",
+      "rank_window": 756,
+      "rank_min_periods": 252,
+      "entry_quantile": 0.8,
+      "exit_quantile": 0.2,
+      "trend_window": 250,
+      "trend_slope_gap": 20
+    }
+  },
+  "source_sha256": {
+    "data/extended/sh000300.csv": "e5c7c8019056c930ae40106ebcf7e090be72ea74ab9bada4a321a0a713bba509",
+    "data/extended/sh000016.csv": "52386b0b928d3ce7dba51ffa7535fd9a9fe55ea9bc4dcecc0a8603a53b1789d9",
+    "data/extended/sh000905.csv": "ada0f6e0371ef01d67748e572cf7a09435a97fb3ddb397b87b5d0dc224dab740"
+  },
+  "code_sha256": {
+    "improve.py": "77add020e055f99a31a8530924863cd9844000f209f5163252b039e27a415c8b",
+    "rsrs/improvement.py": "15969ba7f418b78161039e635d21b8825bdb25a22d3f9a1bd33a75d903ad75ad",
+    "tests/test_improvement.py": "dec26c03575ab50b47b8fdffd1894f5e2a9a1e3be91c96e0b02e6f537f1ef9f1"
+  }
+}

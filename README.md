@@ -4,6 +4,8 @@
 
 **从这里阅读：[按原研报顺序的完整复现报告](report/paper/report.md)。** 全部32个图主题、10张表及结果解释集中在这一份报告中；图3—6是概念示意，分箱与数据缺口等不能精确复刻的事项明确披露。无需先读代码或分散的CSV。
 
+**后续研究：[策略失效诊断与后验改进](report/improvement/report.md)。** 结合2019年作者的回顾与改进，检验波动率钝化，并提出滚动分位数与长期趋势约束的状态自适应RSRS。该部分明确标注为看到后续历史后的改进研究，不冒充盲样本外结果。
+
 ## 1、阻力支撑相对强度概念
 
 对应原文1.1—1.4节：先重建布林带(14,2)和MA20对照，再说明高低价作为代理变量的理由、四种市场状态示意以及滚动OLS斜率与标准分的构造。输出图1—8、表1。
@@ -48,7 +50,10 @@ python paper.py
 python tests/test_rsrs.py
 python tests/test_research.py
 python tests/test_paper.py
+python tests/test_improvement.py
 python check_replication.py
+python improve.py
+python check_improvement.py
 ```
 
 使用仓库固定数据，无需账户、网络或token。`python paper.py --no-plots --outdir /tmp/rsrs-paper`只计算不绘图。`replicate.py`与`make_figures.py`也转到同一主入口，避免多套成交口径。原始行情替换用`--data-dir`，CSV格式为date/open/high/low/close/volume；不会自动填补缺失年份。
@@ -61,6 +66,7 @@ python check_replication.py
 | [report/paper/coverage.csv](report/paper/coverage.csv) | 可机器核查的42项覆盖清单 |
 | report/paper/figures、tables、data | 所有图片、原文式表格、逐日明细及核账 |
 | [report/research/report.md](report/research/report.md) | 独立附录：延长样本与额外检验 |
+| [report/improvement/report.md](report/improvement/report.md) | 2019改进复核、失效归因与自有候选策略 |
 
 ## 口径与复现边界
 

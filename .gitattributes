@@ -8,5 +8,6 @@
 /data/extended/** -text
 /report/paper/** -text
 /report/research/** -text
+/report/improvement/** -text
 *.png binary
 *.docx binary
