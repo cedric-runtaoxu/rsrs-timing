@@ -29,9 +29,9 @@
    支持等宽分箱（``binning="width"``，贴近原图横轴）与等频分箱
    （``binning="quantile"``），并可用 :func:`sensitivity_to_bins` 量化结果对
    分箱方案的敏感性 —— 该敏感性本身是评估这一论断可靠性的关键。
-2. **重叠窗口**。10 日窗口逐日滚动，名义样本 2 900 余个，但相互独立的观测
-   仅约 293 个，相关系数的显著性被显著高估。原报告未披露分箱数，也未做
-   显著性检验。
+2. **重叠窗口**。10日收益逐日滚动会导致序列相关，不能使用独立同分布假设
+   直接推断显著性。非重叠窗口数量也不等于有效独立样本量。新研究用HAC与
+   分块bootstrap，并披露统计假设；分箱相关性本身只作描述。
 """
 
 from __future__ import annotations
@@ -174,5 +174,5 @@ def sensitivity_to_bins(
 
 
 def effective_sample_n(close: pd.Series, horizon: int = 10) -> int:
-    """重叠窗口下的近似有效样本量（按非重叠切片估计）。"""
+    """旧API：仅返回非重叠窗口数量上界，不是有效样本量或独立性证明。"""
     return int(len(close) / max(horizon, 1))

@@ -1,0 +1,12 @@
+# Keep source text portable; preserve exact bytes of hashed research snapshots.
+* text=auto
+* whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+/data/extended/** -text
+/report/paper/** -text
+/report/research/** -text
+*.png binary
+*.docx binary

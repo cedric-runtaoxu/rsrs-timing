@@ -30,6 +30,7 @@ def load_index(
     start: Optional[str] = None,
     end: Optional[str] = None,
     data_dir: Optional[Path] = None,
+    invalid_ohlc: str = "drop",
 ) -> pd.DataFrame:
     """读取并校验指数日行情，返回 ``DataFrame(index=date)``。
 
@@ -64,10 +65,17 @@ def load_index(
         | (df["low"] > df[["open", "close", "high"]].min(axis=1) + tol)
     )
     n_invalid = int(invalid.sum())
+    if invalid_ohlc not in ("drop", "mask"):
+        raise ValueError("invalid_ohlc 必须为 drop 或 mask")
     if n_invalid:
-        print(f"[data] 发现 {n_invalid} 行 OHLC 自相矛盾（源数据错误），已丢弃：")
+        print(f"[data] {n_invalid} 行 OHLC 异常，处理={invalid_ohlc}：")
         print(f"       {df.index[invalid].date.tolist()[:10]}")
-        df = df[~invalid]
+        if invalid_ohlc == "drop":
+            df = df[~invalid]
+        else:
+            # 保留日期和收盘收益，避免把两日收益合成一日、改变滚动窗口。
+            # 不能判断哪个源字段错误，因此只屏蔽依赖高低价的指标，并披露 close 未外部核验。
+            df.loc[invalid, ["high", "low"]] = float("nan")
     if (df["close"] <= 0).any():
         df = df[df["close"] > 0]
 

@@ -27,8 +27,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 CTX = ssl.create_default_context()
-CTX.check_hostname = False
-CTX.verify_mode = ssl.CERT_NONE
 UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
 START, END, BATCH = "2005-01-01", "2024-12-31", 2000
@@ -78,6 +76,8 @@ def fetch_all(symbol, start=START, end=END):
 def main():
     ap = argparse.ArgumentParser(description="下载指数日行情")
     ap.add_argument("--outdir", default=None, help="输出目录，默认 ./data")
+    ap.add_argument("--start", default=START, help="请求起点 YYYY-MM-DD")
+    ap.add_argument("--end", default=END, help="请求截止 YYYY-MM-DD；输出以实际返回日期为准")
     ap.add_argument("--symbols", nargs="*", default=list(SYMBOLS), choices=list(SYMBOLS))
     args = ap.parse_args()
 
@@ -85,7 +85,10 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
 
     for symbol in args.symbols:
-        rows = fetch_all(symbol)
+        rows = fetch_all(symbol, start=args.start, end=args.end)
+        rows = [r for r in rows if args.start <= r[0] <= args.end]
+        if not rows:
+            raise RuntimeError(f"{symbol}: 请求区间无数据，不覆盖文件")
         p = out / f"{symbol}.csv"
         with open(p, "w", encoding="utf-8") as f:
             f.write("date,open,high,low,close,volume\n")

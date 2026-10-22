@@ -2,8 +2,9 @@
 
 交易假设
 --------
-* 仓位：满仓（1）/ 空仓（0），无杠杆、无做空。
-* 成交：信号在 t 日收盘产生，实际在 t + ``lag`` 日生效（默认 lag=1，次日收盘成交）。
+* 仓位：多头（1）/ 空仓（0）/ 空头（-1），按日度指数目标暴露计收益。
+* 成交：默认 next_close，信号在 t 日收盘产生，t+lag 日收盘成交，
+  从下一段收盘到收盘收益开始计损益。legacy_close 仅用于旧版数字诊断。
 * 成本：每次仓位变化收取 ``cost`` 的单边费率；原报告按**双边** 0.4% / 0.6% 列示，
   本模块的 ``cost`` 是单边费率，双边 0.4% 对应单边 0.002。
 * 基准：同一指数买入持有（buy & hold）。
@@ -12,9 +13,9 @@
 ----------------------
 原报告表 2 给出 持仓总天数 ÷ 交易次数 = 平均持仓天数
 （例如标准分策略 1353 ÷ 52 = 26.02），说明报告的「交易次数」指**建仓次数**
-（即完整买卖回合数），而不是仓位变化次数。本模块同时报告两个口径：
+（期末未平仓也计入，因此不等于已完成回合数），而不是仓位变化次数：
 
-* ``n_trades``   建仓次数（等价于完整回合数），与原报告可比；
+* ``n_trades``   收益持仓段数，含期末未平仓，不等价于完成回合数；
 * ``n_switches`` 仓位变化次数（建仓 + 平仓），约为前者的两倍。
 """
 
@@ -39,12 +40,16 @@ class BacktestResult:
     equity: pd.Series
     benchmark_equity: pd.Series
     n_trades: int
-    """建仓次数（完整买卖回合数），与原报告口径一致。"""
+    """持仓段数，含期末未平仓。"""
     n_switches: int
     """仓位变化次数（建仓 + 平仓）。"""
     trades: pd.DataFrame = field(default_factory=pd.DataFrame)
     """每笔交易的明细：start / end / days / ret（不计成本）。"""
     params: dict = field(default_factory=dict)
+    execution_position: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))
+    """收盘成交后的仓位；position 是当日收盘收益使用的仓位。"""
+    turnover: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))
+    short_carry: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))
 
 
 def trade_table(pos: pd.Series, gross_ret: pd.Series) -> pd.DataFrame:
@@ -82,28 +87,47 @@ def backtest(
     lag: int = 1,
     cost: float = 0.001,
     benchmark: str = "buy_hold",
+    execution: str = "next_close",
+    short_cost: float = 0.0,
 ) -> BacktestResult:
-    """按 ``position``（0/1，t 日收盘决策）回测。
+    """按 ``position``（-1/0/1，t 日收盘决策）回测。
 
     Parameters
     ----------
-    lag : 信号日到生效日的滞后。**设成 0 就是未来函数**（用了当日高低价却当日成交）。
+    lag : 信号日到收盘执行日的交易日间隔，默认 1。
     cost : 单边交易费率，仓位变化当天扣除。
+    short_cost : 空头占用的假设年化持有费用，按252交易日分摊；主研究为0。
+    execution : next_close 为可执行的延迟收盘口径；legacy_close 将信号
+        shift(lag) 直接乘当日收益，只用于历史结果对照，不能称为次日收盘成交。
     """
     if lag < 1:
         raise ValueError("lag 必须 >= 1，否则存在未来函数")
+    if execution not in ("next_close", "legacy_close"):
+        raise ValueError("execution 必须为 next_close 或 legacy_close")
+    if not 0 <= cost < 1:
+        raise ValueError("cost 必须在 [0,1) 内")
+    if not 0 <= short_cost < 1:
+        raise ValueError("short_cost 必须在 [0,1) 内")
+    if df.empty or not df.index.is_unique or not df.index.is_monotonic_increasing:
+        raise ValueError("输入必须为非空、日期唯一且递增的数据")
 
     pos = position.reindex(df.index).ffill().fillna(0.0)
-    pos_effective = pos.shift(lag).fillna(0.0)
+    if not np.isfinite(pos).all() or not pos.between(-1,1).all():
+        raise ValueError("目标仓位必须为[-1,1]内的有限数值")
+    executed = pos.shift(lag).fillna(0.0)
+    pos_effective = executed.shift(1).fillna(0.0) if execution == "next_close" else executed
 
     gross_ret = df["ret"].fillna(0.0)
-    turnover = pos_effective.diff().abs().fillna(0.0)
+    turnover = executed.diff().abs()
+    turnover.iloc[0] = abs(executed.iloc[0])
     cost_series = turnover * cost
 
-    strat_ret = pos_effective * gross_ret - cost_series
+    carry = -pos_effective.clip(upper=0) * short_cost / TRADING_DAYS
+    strat_ret = pos_effective * gross_ret - cost_series - carry
     bench_ret = gross_ret
 
-    trades = trade_table(pos_effective, pos_effective * gross_ret)
+    # trade_table 内部只乘一次方向；传入指数收益，避免空头被重复翻转。
+    trades = trade_table(pos_effective, gross_ret)
 
     return BacktestResult(
         ret=strat_ret,
@@ -112,9 +136,12 @@ def backtest(
         equity=(1.0 + strat_ret).cumprod(),
         benchmark_equity=(1.0 + bench_ret).cumprod(),
         n_trades=int(len(trades)),
-        n_switches=int(pos_effective.diff().ne(0).sum()),
+        n_switches=int((turnover > 0).sum()),
         trades=trades,
-        params={"lag": lag, "cost": cost, "benchmark": benchmark},
+        params={"lag": lag, "cost": cost, "benchmark": benchmark, "execution": execution, "short_cost":short_cost},
+        execution_position=executed,
+        turnover=turnover,
+        short_carry=carry,
     )
 
 
@@ -122,7 +149,8 @@ def backtest(
 
 
 def total_return(equity: pd.Series) -> float:
-    return float(equity.iloc[-1] / equity.iloc[0] - 1.0)
+    """equity 为从初始资金 1 累乘的每日期末净值，首日收益不能被除掉。"""
+    return float(equity.iloc[-1] - 1.0)
 
 
 def annualized_return(ret: pd.Series, periods: int = TRADING_DAYS) -> float:
@@ -141,7 +169,7 @@ def sharpe(ret: pd.Series, periods: int = TRADING_DAYS) -> float:
 
 
 def max_drawdown(equity: pd.Series) -> float:
-    peak = equity.cummax()
+    peak = equity.cummax().clip(lower=1.0)
     return float((equity / peak - 1.0).min())
 
 

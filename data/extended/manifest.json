@@ -1,0 +1,51 @@
+{
+  "requested_end": "2026-10-21",
+  "retrieved_on": "2026-10-22 Asia/Singapore",
+  "source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+  "history_commit": "1106e536fd8551a44626637e129ffd6bf48ef8cb",
+  "merge_policy": "Keep original data through 2024-12-31; append dates after original last date. Overlap checked, not overwritten.",
+  "symbols": {
+    "sh000300": {
+      "start": "2005-04-08",
+      "end": "2026-10-21",
+      "rows": 5231,
+      "overlap_rows": 22,
+      "overlap_max_absolute_difference": {
+        "open": 0.0,
+        "high": 0.0,
+        "low": 0.0,
+        "close": 0.0,
+        "volume": 0.0
+      },
+      "sha256": "e5c7c8019056c930ae40106ebcf7e090be72ea74ab9bada4a321a0a713bba509"
+    },
+    "sh000016": {
+      "start": "2005-01-04",
+      "end": "2026-10-21",
+      "rows": 5292,
+      "overlap_rows": 22,
+      "overlap_max_absolute_difference": {
+        "open": 0.0,
+        "high": 0.0,
+        "low": 0.0,
+        "close": 0.0,
+        "volume": 0.0
+      },
+      "sha256": "52386b0b928d3ce7dba51ffa7535fd9a9fe55ea9bc4dcecc0a8603a53b1789d9"
+    },
+    "sh000905": {
+      "start": "2007-01-15",
+      "end": "2026-10-21",
+      "rows": 4802,
+      "overlap_rows": 22,
+      "overlap_max_absolute_difference": {
+        "open": 0.0,
+        "high": 0.0,
+        "low": 0.0,
+        "close": 0.0,
+        "volume": 0.0
+      },
+      "sha256": "ada0f6e0371ef01d67748e572cf7a09435a97fb3ddb397b87b5d0dc224dab740"
+    }
+  }
+}

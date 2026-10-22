@@ -121,7 +121,8 @@ def test_backtest_lag_prevents_lookahead():
 
     res = backtest(df, sig, lag=1)
     # 生效仓位比决策信号滞后一天
-    assert (res.position == sig.shift(1).fillna(0.0)).all()
+    assert (res.execution_position == sig.shift(1).fillna(0.0)).all()
+    assert (res.position == sig.shift(2).fillna(0.0)).all()
 
 
 def test_metrics_bounds():
@@ -144,7 +145,7 @@ def test_cost_reduces_return():
 
 
 def test_ma_filter_uses_lagged_ma():
-    """价格过滤必须用「前一日 MA」与「前三日 MA」，不能用当日 MA（会引入额外信息）。"""
+    """锁定所选的「前一日 MA」与「前三日 MA」口径。"""
     idx = pd.bdate_range("2020-01-01", periods=60)
     close = pd.Series(np.linspace(100, 200, 60), index=idx)   # 单调上涨
     ok = ma_filter(close, window=20)

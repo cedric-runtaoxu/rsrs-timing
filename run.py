@@ -6,8 +6,8 @@
 本脚本是**通用演示工具**：默认跑全样本（2005—2024）并计入单边 0.1% 的交易成本，
 用于快速查看指标行为、交易信号与净值曲线。
 
-严谨的**复现口径**（与原报告可比）是「样本 2005-04-08 ~ 2017-04-28、不计成本」，
-由 ``replicate.py`` 生成，结果见 README 第四节。
+本脚本使用已修正的次日收盘执行；旧数字诊断见 replicate.py，
+延长至2026年的完整有效性研究见 research.py。
 
 为避免两者混淆，本脚本的输出文件统一使用 ``demo_`` 前缀；复现脚本的输出使用
 ``replicate_`` 前缀。
@@ -15,7 +15,7 @@
 用法::
 
     python run.py                              # 沪深300，全样本，单边成本 0.001
-    python run.py --end 2017-04-28 --cost 0    # 与复现口径一致的单指标视图
+    python run.py --end 2017-04-28 --cost 0    # 次日收盘执行的单指标视图
     python run.py --symbol sh000001
     python run.py --n 18 --m 600 --s-buy 0.7 --s-sell -0.7
 """
@@ -58,7 +58,7 @@ def main() -> int:
     name = SYMBOLS[args.symbol]
 
     print("=" * 74)
-    print("演示口径（与 README 第四节的复现口径不同，结果不可直接对照）")
+    print("演示口径：原始数据快照、次日收盘执行；独立研究见 research.py")
     print(f"  标的      : {name}（{args.symbol}）")
     print(f"  区间      : {df.index[0].date()} ~ {df.index[-1].date()}，{len(df)} 个交易日")
     print(f"  单边成本  : {args.cost:.4f}")
@@ -93,7 +93,7 @@ def main() -> int:
     if fig:
         print(f"\n图表已生成: {fig}")
     print(f"\n演示产物已写入: {REPORT}（文件名以 {PREFIX}_ 开头）")
-    print("复现产物见 README 第四节，由 replicate.py / check_replication.py 生成。")
+    print("旧数字对照见 docs/legacy_replication.md；当前研究见 report/research/report.md。")
     return 0
 
 

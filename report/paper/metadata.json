@@ -1,0 +1,92 @@
+{
+  "calculated_at_utc": "2026-10-22T08:41:55.964223+00:00",
+  "spec": {
+    "n": 18,
+    "m": 600,
+    "right_n": 16,
+    "right_m": 300,
+    "min_periods": 10,
+    "exclude_current": false,
+    "buy": 0.7,
+    "sell": -0.7,
+    "beta_buy": 1.0,
+    "beta_sell": 0.8,
+    "ma_window": 20,
+    "volume_window": 10,
+    "volume_lag": 1,
+    "boll_window": 14,
+    "boll_width": 2.0,
+    "boll_ddof": 0,
+    "execution": "next_close",
+    "lag": 1,
+    "cost": 0.0,
+    "short_cost": 0.0,
+    "annualization": 252,
+    "invalid_ohlc": "mask",
+    "end": "2017-04-28"
+  },
+  "main_requested": [
+    "2005-03-01",
+    "2017-04-28"
+  ],
+  "cross_requested": [
+    "2005-03-01",
+    "2017-03-31"
+  ],
+  "n_grid": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25
+  ],
+  "m_grid": [
+    450,
+    500,
+    550,
+    600,
+    650,
+    700,
+    750,
+    800
+  ],
+  "costs_single_side": [
+    0.0,
+    0.002,
+    0.003
+  ],
+  "prediction_bins": 50,
+  "source_sha256": {
+    "data/extended/sh000300.csv": "e5c7c8019056c930ae40106ebcf7e090be72ea74ab9bada4a321a0a713bba509",
+    "data/extended/sh000016.csv": "52386b0b928d3ce7dba51ffa7535fd9a9fe55ea9bc4dcecc0a8603a53b1789d9",
+    "data/extended/sh000905.csv": "ada0f6e0371ef01d67748e572cf7a09435a97fb3ddb397b87b5d0dc224dab740"
+  },
+  "plots_generated": true,
+  "code_hash_normalization": "CRLF normalized to LF",
+  "code_sha256": {
+    "paper.py": "347102334c8a44950dacdcc6b1fcac4822060ce6317e242f8800049707583b0a",
+    "research.py": "2a762cfe185e11fcd4f3268130c9b97adcb51a8cd7830060e8f02ae3c128a5ae",
+    "rsrs/__init__.py": "0dd6acf30e6c74cfe2628c26446cc42962934fb6b6a5b830fca96b476e44791f",
+    "rsrs/backtest.py": "1ff07a8297b061e0b89863ea0a4dfa5123c1da45fec6523e82b9f78ce4337670",
+    "rsrs/data.py": "8f5d4f21d849831085947c63360648b129e2316290a47e7b02d523cf761bbb29",
+    "rsrs/indicators.py": "ffff742a38be4ff2cf94e5afc46dcdba013fa0d4ddd3c1f73872b7097a38cd36",
+    "rsrs/paper_reporting.py": "5c9e6a9bb428cbccc9afc9df3493536e62932fde29d7fb6e6b68befb2eb885b9",
+    "rsrs/paper_study.py": "11fce1810321688b2b0f4129b9adc00a4a773c97e524891d5d379eb3553ffe0a",
+    "rsrs/plot.py": "6b534e580f0cb934edf1a97b9c305079637a08b7743ca524c5a5e19cbff06215",
+    "rsrs/predictive.py": "7dcbd2c886346f9291c9350e9fc8038b80f2448f2b0ce512d83e999ba3fd5281",
+    "rsrs/research_checks.py": "32e2591bff75c8116c087f1b9505da5f759e5604f0862288ee1fabe2cc6cc345",
+    "rsrs/research_explanation.py": "da4faec1a120f91179d38af95b8a4f4fa415c0a99399708463952fe2d012ec7d",
+    "rsrs/research_reporting.py": "c807d04cd65f9e0dcd4e45032defb9dff8de6013c36454cde094fded3db85198",
+    "rsrs/research_spec.py": "6aca5cb597d06714ab67878d7ec3d9cf966f27e1a798ee7d2b56e2af41099bf1",
+    "rsrs/strategies.py": "4dc5ad57b3672fb4bbea3ca632f6eb30196d19892970a2dd534af8851ec3e790"
+  },
+  "table7_indicator": "zscore; paper columns not explicit, inferred from baseline column",
+  "figure32": "follow six-series legend; title mismatch documented"
+}

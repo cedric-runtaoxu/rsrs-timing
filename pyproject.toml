@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rsrs-timing"
-version = "0.3.0"
-description = "光大证券 RSRS 择时指标复现：4 个基础指标 + 6 个优化策略"
+version = "0.4.0"
+description = "按光大2017年研报章节、32图10表复现RSRS市场择时"
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -22,8 +22,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# 仅作图需要；全部计算与对照表只依赖 numpy / pandas
+# 基础指标依赖numpy/pandas；完整研究另需统计与绘图库
 plot = ["matplotlib>=3.7"]
+research = ["matplotlib>=3.7", "statsmodels>=0.14", "scipy>=1.11"]
 
 [tool.setuptools]
 packages = ["rsrs"]
